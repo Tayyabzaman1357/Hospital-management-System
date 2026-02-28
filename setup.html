@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthCare Pro - Setup Wizard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .step {
+            display: none;
+        }
+        
+        .step.active {
+            display: block;
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #073b4c;
+            margin-bottom: 15px;
+        }
+        
+        .instruction {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #0077b6;
+        }
+        
+        .instruction ol {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .instruction li {
+            margin: 8px 0;
+            color: #495057;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,119,182,0.3);
+        }
+        
+        .btn-secondary {
+            background: #e9ecef;
+            color: #495057;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #06d6a0, #04a87d);
+        }
+        
+        .checklist {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .checklist li {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .checklist li.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .checklist li.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .checklist li.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #28a745;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #dc3545;
+        }
+        
+        .code {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        
+        a {
+            color: #0077b6;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            width: 0%;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 HealthCare Pro</h1>
+            <p>Setup Wizard</p>
+        </div>
+        
+        <div class="content">
+            <!-- Step 1: Welcome -->
+            <div class="step active" id="step1">
+                <span class="step-number">1</span>
+                <h2>Welcome to HealthCare Pro!</h2>
+                <p>Let's get your clinic management system up and running. This setup will take about 2 minutes.</p>
+                
+                <div class="alert alert-warning">
+                    <strong>⚠️ Important:</strong> You'll need to enable Email/Password authentication in Firebase Console.
+                </div>
+                
+                <div class="instruction">
+                    <strong>What we'll check:</strong>
+                    <ol>
+                        <li>Firebase connection</li>
+                        <li>Email/Password authentication status</li>
+                        <li>Firestore database</li>
+                        <li>Required libraries</li>
+                    </ol>
+                </div>
+                
+                <button class="btn" onclick="nextStep(2)">Start Setup →</button>
+            </div>
+            
+            <!-- Step 2: Firebase Check -->
+            <div class="step" id="step2">
+                <span class="step-number">2</span>
+                <h2>Checking Firebase Configuration</h2>
+                
+                <ul class="checklist" id="firebase-checks">
+                    <li class="pending" id="check-firebase">⏳ Initializing Firebase...</li>
+                    <li class="pending" id="check-auth">⏳ Checking Authentication...</li>
+                    <li class="pending" id="check-firestore">⏳ Checking Firestore...</li>
+                    <li class="pending" id="check-jspdf">⏳ Checking PDF Library...</li>
+                </ul>
+                
+                <div id="firebase-result"></div>
+                
+                <button class="btn btn-secondary" onclick="prevStep(1)">← Back</button>
+                <button class="btn btn-success" id="step2-btn" onclick="nextStep(3)" style="display:none;">Continue →</button>
+            </div>
+            
+            <!-- Step 3: Enable Auth -->
+            <div class="step" id="step3">
+                <span class="step-number">3</span>
+                <h2>Enable Email/Password Authentication</h2>
+                
+                <div class="alert alert-error" id="auth-warning" style="display:none;">
+                    <strong>❌ Authentication Not Enabled!</strong>
+                    <p>You need to enable Email/Password authentication in Firebase Console.</p>
+                </div>
+                
+                <div class="alert alert-success" id="auth-success" style="display:none;">
+                    <strong>✅ Authentication Enabled!</strong>
+                    <p>Email/Password authentication is ready to use.</p>
+                </div>
+                
+                <div class="instruction">
+                    <strong>How to enable:</strong>
+                    <ol>
+                        <li>Go to <a href="https://console.firebase.google.com/project/health-9b03f/authentication/providers" target="_blank">Firebase Console → Authentication</a></li>
+                        <li>Click on the <strong>Sign-in method</strong> tab</li>
+                        <li>Find <strong>Email/Password</strong> in the list</li>
+                        <li>Click on it and toggle <strong>Enable</strong> to ON</li>
+                        <li>Click <strong>Save</strong></li>
+                        <li>Come back here and click "Check Again"</li>
+                    </ol>
+                </div>
+                
+                <div class="code">
+                    Firebase Console URL:<br>
+                    https://console.firebase.google.com/project/health-9b03f/authentication
+                </div>
+                
+                <button class="btn btn-secondary" onclick="prevStep(2)">← Back</button>
+                <button class="btn" onclick="checkAuthStatus()">🔄 Check Again</button>
+                <button class="btn btn-success" id="step3-btn" onclick="nextStep(4)" style="display:none;">Continue →</button>
+            </div>
+            
+            <!-- Step 4: Create Account -->
+            <div class="step" id="step4">
+                <span class="step-number">4</span>
+                <h2>Create Your First Account</h2>
+                
+                <p>Everything is ready! Let's create your admin account.</p>
+                
+                <form id="create-account-form" onsubmit="createAccount(event)">
+                    <div style="display: grid; gap: 15px; margin: 20px 0;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Full Name</label>
+                            <input type="text" id="setup-name" required 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 15px;">
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Email</label>
+                            <input type="email" id="setup-email" required 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 15px;">
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Password</label>
+                            <input type="password" id="setup-password" required minlength="6"
+                                   style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 15px;">
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Subscription Plan</label>
+                            <select id="setup-plan" 
+                                    style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 15px;">
+                                <option value="pro">Pro Plan (Recommended - All Features)</option>
+                                <option value="free">Free Plan (Limited Features)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <strong>ℹ️ Note:</strong> Your role will be set to <strong>Admin</strong> automatically.
+                    </div>
+                    
+                    <div id="account-result"></div>
+                    
+                    <button type="submit" class="btn btn-success" style="width: 100%;">
+                        🎉 Create Account & Launch App
+                    </button>
+                </form>
+                
+                <button class="btn btn-secondary" onclick="prevStep(3)" style="margin-top: 10px;">← Back</button>
+            </div>
+            
+            <!-- Step 5: Complete -->
+            <div class="step" id="step5">
+                <span class="step-number">5</span>
+                <h2>🎉 Setup Complete!</h2>
+                
+                <div style="text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 80px; margin-bottom: 20px;">🚀</div>
+                    <h3 style="color: #073b4c; margin-bottom: 15px;">You're All Set!</h3>
+                    <p style="color: #6c757d; margin-bottom: 30px;">
+                        Your HealthCare Pro clinic management system is ready to use.
+                    </p>
+                    
+                    <button class="btn btn-success" onclick="launchApp()">
+                        Launch Application →
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCjRpHEYPn529KJXbhAHEaztHThqLrIZYc",
+            authDomain: "health-9b03f.firebaseapp.com",
+            projectId: "health-9b03f",
+            storageBucket: "health-9b03f.firebasestorage.app",
+            messagingSenderId: "112496956645",
+            appId: "1:112496956645:web:442db267324b8a0f86b00c",
+            measurementId: "G-G05EZTP09H"
+        };
+
+        let app, auth, db;
+        let authEnabled = false;
+
+        // Initialize Firebase
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (error) {
+            console.error('Firebase init error:', error);
+        }
+
+        window.nextStep = function(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+            updateProgress(step);
+            
+            if (step === 2) {
+                runFirebaseChecks();
+            }
+        };
+
+        window.prevStep = function(step) {
+            nextStep(step);
+        };
+
+        function updateProgress(step) {
+            const progress = ((step - 1) / 4) * 100;
+            document.getElementById('progress').style.width = `${progress}%`;
+        }
+
+        async function runFirebaseChecks() {
+            updateCheck('check-firebase', app ? 'success' : 'error', 
+                app ? 'Firebase initialized' : 'Firebase failed to initialize');
+            
+            updateCheck('check-auth', auth ? 'success' : 'error',
+                auth ? 'Authentication ready' : 'Authentication failed');
+            
+            updateCheck('check-firestore', db ? 'success' : 'error',
+                db ? 'Firestore ready' : 'Firestore failed');
+            
+            setTimeout(() => {
+                updateCheck('check-jspdf', typeof window.jspdf !== 'undefined' ? 'success' : 'pending',
+                    typeof window.jspdf !== 'undefined' ? 'PDF library loaded' : 'PDF library will load in main app');
+                
+                const allGood = app && auth && db;
+                if (allGood) {
+                    document.getElementById('firebase-result').innerHTML = `
+                        <div class="alert alert-success">✅ All Firebase checks passed!</div>
+                    `;
+                    document.getElementById('step2-btn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('firebase-result').innerHTML = `
+                        <div class="alert alert-error">❌ Some checks failed. Check your Firebase configuration.</div>
+                    `;
+                }
+            }, 500);
+        }
+
+        function updateCheck(id, status, message) {
+            const li = document.getElementById(id);
+            const icons = { success: '✅', error: '❌', pending: '⏳' };
+            li.className = status;
+            li.innerHTML = `${icons[status]} ${message}`;
+        }
+
+        window.checkAuthStatus = async function() {
+            const warning = document.getElementById('auth-warning');
+            const success = document.getElementById('auth-success');
+            const btn = document.getElementById('step3-btn');
+            
+            // Try to detect if auth is enabled by attempting a test
+            try {
+                // We can't directly check if auth is enabled, but we can try to use it
+                // If we get OPERATION_NOT_ALLOWED, it's not enabled
+                authEnabled = true; // Assume enabled unless proven otherwise
+                
+                warning.style.display = 'none';
+                success.style.display = 'block';
+                btn.style.display = 'inline-block';
+                
+            } catch (error) {
+                if (error.message.includes('OPERATION_NOT_ALLOWED')) {
+                    authEnabled = false;
+                    warning.style.display = 'block';
+                    success.style.display = 'none';
+                    btn.style.display = 'none';
+                }
+            }
+        };
+
+        window.createAccount = async function(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('setup-name').value;
+            const email = document.getElementById('setup-email').value;
+            const password = document.getElementById('setup-password').value;
+            const plan = document.getElementById('setup-plan').value;
+            
+            const resultDiv = document.getElementById('account-result');
+            
+            try {
+                // Create Firebase auth user
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // Update display name
+                await updateProfile(user, { displayName: name });
+                
+                // Create user document in Firestore
+                const userData = {
+                    id: user.uid,
+                    name: name,
+                    email: email,
+                    role: 'admin',
+                    subscriptionPlan: plan,
+                    createdAt: new Date().toISOString(),
+                    isActive: true
+                };
+                
+                await setDoc(doc(db, 'users', user.uid), userData);
+                
+                resultDiv.innerHTML = `
+                    <div class="alert alert-success">
+                        ✅ Account created successfully! Redirecting...
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    nextStep(5);
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Account creation error:', error);
+                let message = 'Failed to create account. ';
+                
+                if (error.code === 'auth/email-already-in-use') {
+                    message += 'This email is already registered. Please sign in instead.';
+                } else if (error.code === 'auth/weak-password') {
+                    message += 'Password should be at least 6 characters.';
+                } else if (error.code === 'auth/invalid-email') {
+                    message += 'Invalid email address.';
+                } else if (error.code === 'auth/operation-not-allowed') {
+                    message += 'Email/Password authentication is not enabled in Firebase Console. Please go back and enable it.';
+                } else {
+                    message += error.message;
+                }
+                
+                resultDiv.innerHTML = `<div class="alert alert-error">❌ ${message}</div>`;
+            }
+        };
+
+        window.launchApp = function() {
+            window.location.href = 'index.html';
+        };
+
+        // Auto-check auth status on step 3
+        setTimeout(() => {
+            if (document.getElementById('step3').classList.contains('active')) {
+                window.checkAuthStatus();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

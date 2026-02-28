@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthCare Pro - Clinic Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="login-page" class="auth-page">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-logo">
+                    <i class="fas fa-heartbeat"></i>
+                    <h1>HealthCare Pro</h1>
+                </div>
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Sign in to your account</p>
+                
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" required placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" required placeholder="Enter your password">
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <span class="btn-text">Sign In</span>
+                        <span class="btn-loader" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Don't have an account? <a href="#" id="show-signup">Sign Up</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Page -->
+    <div id="signup-page" class="auth-page" style="display: none;">
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="auth-logo">
+                    <i class="fas fa-heartbeat"></i>
+                    <h1>HealthCare Pro</h1>
+                </div>
+                <h2>Create Account</h2>
+                <p class="auth-subtitle">Register a new account</p>
+                
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input type="text" id="signup-name" required placeholder="Enter your name">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" required placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" required placeholder="Create a password" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-role">Role</label>
+                        <select id="signup-role" required>
+                            <option value="">Select Role</option>
+                            <option value="admin">Admin</option>
+                            <option value="doctor">Doctor</option>
+                            <option value="receptionist">Receptionist</option>
+                            <option value="patient">Patient</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-plan">Subscription Plan</label>
+                        <select id="signup-plan" required>
+                            <option value="free">Free Plan</option>
+                            <option value="pro">Pro Plan</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <span class="btn-text">Create Account</span>
+                        <span class="btn-loader" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </span>
+                    </button>
+                </form>
+                
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="#" id="show-login">Sign In</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard-page" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-heartbeat"></i>
+                <span>HealthCare Pro</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="patients" id="nav-patients">
+                    <i class="fas fa-users"></i>
+                    <span>Patients</span>
+                </a>
+                <a href="#" class="nav-item" data-page="appointments" id="nav-appointments">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Appointments</span>
+                </a>
+                <a href="#" class="nav-item" data-page="prescriptions" id="nav-prescriptions">
+                    <i class="fas fa-file-prescription"></i>
+                    <span>Prescriptions</span>
+                </a>
+                <a href="#" class="nav-item" data-page="ai-tools" id="nav-ai-tools" style="display: none;">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Tools</span>
+                </a>
+                <a href="#" class="nav-item" data-page="analytics" id="nav-analytics" style="display: none;">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="nav-item" data-page="subscription" id="nav-subscription" style="display: none;">
+                    <i class="fas fa-crown"></i>
+                    <span>Subscription</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name" id="user-name">User Name</span>
+                        <span class="user-role" id="user-role">Role</span>
+                    </div>
+                </div>
+                <button class="btn-logout" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <button class="menu-toggle" id="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 id="page-title">Dashboard</h1>
+                <div class="top-bar-actions">
+                    <button class="btn-icon" id="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge" id="notification-badge">0</span>
+                    </button>
+                    <div class="subscription-badge" id="subscription-badge">
+                        <i class="fas fa-crown"></i>
+                        <span>Free</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Dashboard Home -->
+                <div id="page-dashboard" class="page active">
+                    <div class="stats-grid" id="dashboard-stats">
+                        <!-- Stats will be populated dynamically -->
+                    </div>
+                    
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Recent Appointments</h3>
+                                <a href="#" class="btn-link" data-page="appointments">View All</a>
+                            </div>
+                            <div class="card-content" id="recent-appointments">
+                                <!-- Appointments will be populated dynamically -->
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Quick Actions</h3>
+                            </div>
+                            <div class="card-content">
+                                <div class="quick-actions" id="quick-actions">
+                                    <!-- Quick actions based on role -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patients Page -->
+                <div id="page-patients" class="page">
+                    <div class="page-header">
+                        <h2>Patient Management</h2>
+                        <button class="btn-primary" id="add-patient-btn">
+                            <i class="fas fa-plus"></i>
+                            Add Patient
+                        </button>
+                    </div>
+                    
+                    <div class="filters-bar">
+                        <input type="text" class="search-input" id="patient-search" placeholder="Search patients...">
+                        <select class="filter-select" id="patient-filter">
+                            <option value="">All Patients</option>
+                        </select>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Gender</th>
+                                    <th>Contact</th>
+                                    <th>Last Visit</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patients-table-body">
+                                <!-- Patients will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Patient Profile Modal -->
+                <div id="patient-modal" class="modal">
+                    <div class="modal-content modal-large">
+                        <div class="modal-header">
+                            <h2 id="patient-modal-title">Patient Profile</h2>
+                            <button class="modal-close">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="patient-profile-header">
+                                <div class="patient-avatar-large" id="patient-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="patient-info">
+                                    <h3 id="patient-profile-name">Patient Name</h3>
+                                    <p id="patient-profile-details">Age: -- | Gender: --</p>
+                                    <p id="patient-profile-contact">Contact: --</p>
+                                </div>
+                            </div>
+                            
+                            <div class="tabs">
+                                <button class="tab active" data-tab="history">Medical History</button>
+                                <button class="tab" data-tab="appointments">Appointments</button>
+                                <button class="tab" data-tab="prescriptions">Prescriptions</button>
+                            </div>
+                            
+                            <div class="tab-content" id="patient-tab-content">
+                                <!-- Tab content will be populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add/Edit Patient Modal -->
+                <div id="patient-form-modal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 id="patient-form-title">Add Patient</h2>
+                            <button class="modal-close">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="patient-form">
+                                <input type="hidden" id="patient-id">
+                                <div class="form-group">
+                                    <label for="patient-name">Full Name</label>
+                                    <input type="text" id="patient-name" required>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="patient-age">Age</label>
+                                        <input type="number" id="patient-age" required min="0" max="150">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="patient-gender">Gender</label>
+                                        <select id="patient-gender" required>
+                                            <option value="">Select</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="patient-contact">Contact Number</label>
+                                    <input type="tel" id="patient-contact" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="patient-email">Email</label>
+                                    <input type="email" id="patient-email">
+                                </div>
+                                <div class="form-group">
+                                    <label for="patient-address">Address</label>
+                                    <textarea id="patient-address" rows="3"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="patient-blood-group">Blood Group</label>
+                                    <select id="patient-blood-group">
+                                        <option value="">Select</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                    </select>
+                                </div>
+                                <div class="modal-actions">
+                                    <button type="button" class="btn-secondary modal-close">Cancel</button>
+                                    <button type="submit" class="btn-primary">Save Patient</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appointments Page -->
+                <div id="page-appointments" class="page">
+                    <div class="page-header">
+                        <h2>Appointment Management</h2>
+                        <button class="btn-primary" id="add-appointment-btn">
+                            <i class="fas fa-plus"></i>
+                            Book Appointment
+                        </button>
+                    </div>
+                    
+                    <div class="filters-bar">
+                        <select class="filter-select" id="appointment-date-filter">
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="all">All</option>
+                        </select>
+                        <select class="filter-select" id="appointment-status-filter">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                        <select class="filter-select" id="appointment-doctor-filter">
+                            <option value="">All Doctors</option>
+                        </select>
+                    </div>
+                    
+                    <div class="appointments-grid" id="appointments-grid">
+                        <!-- Appointments will be populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Add/Edit Appointment Modal -->
+                <div id="appointment-modal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2 id="appointment-form-title">Book Appointment</h2>
+                            <button class="modal-close">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="appointment-form">
+                                <input type="hidden" id="appointment-id">
+                                <div class="form-group">
+                                    <label for="appointment-patient">Patient</label>
+                                    <select id="appointment-patient" required>
+                                        <option value="">Select Patient</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" id="appointment-doctor-group">
+                                    <label for="appointment-doctor">Doctor</label>
+                                    <select id="appointment-doctor" required>
+                                        <option value="">Select Doctor</option>
+                                    </select>
+                                    <small id="doctor-note" style="color: #6c757d; font-size: 12px; margin-top: 5px; display: none;">
+                                        ℹ️ No doctors found. Please create a doctor account first.
+                                    </small>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="appointment-date">Date</label>
+                                        <input type="date" id="appointment-date" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="appointment-time">Time</label>
+                                        <input type="time" id="appointment-time" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="appointment-reason">Reason for Visit</label>
+                                    <textarea id="appointment-reason" rows="3" required></textarea>
+                                </div>
+                                <div class="form-group" id="appointment-status-group" style="display: none;">
+                                    <label for="appointment-status">Status</label>
+                                    <select id="appointment-status">
+                                        <option value="pending">Pending</option>
+                                        <option value="confirmed">Confirmed</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="cancelled">Cancelled</option>
+                                    </select>
+                                </div>
+                                <div class="modal-actions">
+                                    <button type="button" class="btn-secondary modal-close">Cancel</button>
+                                    <button type="submit" class="btn-primary">Book Appointment</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prescriptions Page -->
+                <div id="page-prescriptions" class="page">
+                    <div class="page-header">
+                        <h2>Prescription Management</h2>
+                        <button class="btn-primary" id="add-prescription-btn">
+                            <i class="fas fa-plus"></i>
+                            Create Prescription
+                        </button>
+                    </div>
+                    
+                    <div class="filters-bar">
+                        <input type="text" class="search-input" id="prescription-search" placeholder="Search prescriptions...">
+                        <input type="date" class="filter-select" id="prescription-date-filter">
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Medicines</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prescriptions-table-body">
+                                <!-- Prescriptions will be populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Add Prescription Modal -->
+                <div id="prescription-modal" class="modal">
+                    <div class="modal-content modal-large">
+                        <div class="modal-header">
+                            <h2>Create Prescription</h2>
+                            <button class="modal-close">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="prescription-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="prescription-patient">Patient</label>
+                                        <select id="prescription-patient" required>
+                                            <option value="">Select Patient</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="prescription-appointment">Appointment (Optional)</label>
+                                        <select id="prescription-appointment">
+                                            <option value="">Select Appointment</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Diagnosis</label>
+                                    <input type="text" id="prescription-diagnosis" placeholder="Enter diagnosis">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>Medicines</label>
+                                    <div id="medicines-container">
+                                        <div class="medicine-row">
+                                            <input type="text" class="medicine-name" placeholder="Medicine name" required>
+                                            <input type="text" class="medicine-dosage" placeholder="Dosage (e.g., 500mg)" required>
+                                            <input type="text" class="medicine-frequency" placeholder="Frequency (e.g., 2x daily)" required>
+                                            <input type="number" class="medicine-duration" placeholder="Days" min="1" required>
+                                            <button type="button" class="btn-icon btn-remove" onclick="removeMedicine(this)">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-secondary btn-sm" onclick="addMedicine()">
+                                        <i class="fas fa-plus"></i> Add Medicine
+                                    </button>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="prescription-notes">Instructions/Notes</label>
+                                    <textarea id="prescription-notes" rows="3" placeholder="Additional instructions for the patient"></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="prescription-lifestyle">Lifestyle Recommendations</label>
+                                    <textarea id="prescription-lifestyle" rows="2" placeholder="Diet, exercise, and lifestyle advice"></textarea>
+                                </div>
+                                
+                                <div class="modal-actions">
+                                    <button type="button" class="btn-secondary modal-close">Cancel</button>
+                                    <button type="submit" class="btn-primary">Generate Prescription</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View Prescription Modal -->
+                <div id="view-prescription-modal" class="modal">
+                    <div class="modal-content modal-large">
+                        <div class="modal-header">
+                            <h2>Prescription Details</h2>
+                            <button class="modal-close">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="prescription-view" class="prescription-view">
+                                <!-- Prescription will be displayed here -->
+                            </div>
+                            <div class="modal-actions">
+                                <button class="btn-primary" onclick="downloadPrescriptionPDF()">
+                                    <i class="fas fa-download"></i> Download PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Tools Page -->
+                <div id="page-ai-tools" class="page">
+                    <div class="ai-features-grid">
+                        <div class="card ai-feature-card">
+                            <div class="card-header">
+                                <i class="fas fa-stethoscope ai-icon"></i>
+                                <h3>Smart Symptom Checker</h3>
+                            </div>
+                            <div class="card-content">
+                                <form id="symptom-checker-form">
+                                    <div class="form-group">
+                                        <label>Symptoms</label>
+                                        <div id="symptoms-container">
+                                            <input type="text" class="symptom-input" placeholder="Enter a symptom" required>
+                                        </div>
+                                        <button type="button" class="btn-secondary btn-sm" onclick="addSymptomInput()">
+                                            <i class="fas fa-plus"></i> Add Symptom
+                                        </button>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="sc-age">Age</label>
+                                            <input type="number" id="sc-age" required min="0" max="150">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="sc-gender">Gender</label>
+                                            <select id="sc-gender" required>
+                                                <option value="">Select</option>
+                                                <option value="Male">Male</option>
+                                                <option value="Female">Female</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sc-history">Medical History</label>
+                                        <textarea id="sc-history" rows="3" placeholder="Previous conditions, allergies, etc."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn-primary">
+                                        <i class="fas fa-magic"></i> Analyze Symptoms
+                                    </button>
+                                </form>
+                                
+                                <div id="symptom-results" class="ai-results" style="display: none;">
+                                    <h4>Analysis Results</h4>
+                                    <div class="result-section">
+                                        <span class="result-label">Possible Conditions:</span>
+                                        <div id="sc-conditions" class="result-content"></div>
+                                    </div>
+                                    <div class="result-section">
+                                        <span class="result-label">Risk Level:</span>
+                                        <span id="sc-risk" class="risk-badge"></span>
+                                    </div>
+                                    <div class="result-section">
+                                        <span class="result-label">Suggested Tests:</span>
+                                        <div id="sc-tests" class="result-content"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card ai-feature-card">
+                            <div class="card-header">
+                                <i class="fas fa-file-medical ai-icon"></i>
+                                <h3>Prescription Explanation</h3>
+                            </div>
+                            <div class="card-content">
+                                <form id="prescription-explain-form">
+                                    <div class="form-group">
+                                        <label for="pe-medicines">Medicines</label>
+                                        <textarea id="pe-medicines" rows="3" placeholder="Enter medicine names and dosages" required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="pe-diagnosis">Diagnosis</label>
+                                        <input type="text" id="pe-diagnosis" placeholder="Enter diagnosis">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>
+                                            <input type="checkbox" id="pe-urdu">
+                                            Include Urdu Translation
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="btn-primary">
+                                        <i class="fas fa-magic"></i> Generate Explanation
+                                    </button>
+                                </form>
+                                
+                                <div id="explanation-results" class="ai-results" style="display: none;">
+                                    <h4>Patient-Friendly Explanation</h4>
+                                    <div id="pe-explanation" class="result-content"></div>
+                                    <div id="pe-urdu-text" class="urdu-text" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card ai-feature-card">
+                            <div class="card-header">
+                                <i class="fas fa-exclamation-triangle ai-icon"></i>
+                                <h3>Risk Flagging</h3>
+                            </div>
+                            <div class="card-content">
+                                <p class="ai-description">Automatically analyzes patient records for:</p>
+                                <ul class="ai-features-list">
+                                    <li><i class="fas fa-check"></i> Repeated infection patterns</li>
+                                    <li><i class="fas fa-check"></i> Chronic symptoms</li>
+                                    <li><i class="fas fa-check"></i> High-risk medication combinations</li>
+                                </ul>
+                                <button class="btn-primary" onclick="analyzePatientRisks()">
+                                    <i class="fas fa-search"></i> Analyze All Patients
+                                </button>
+                                
+                                <div id="risk-results" class="ai-results" style="display: none;">
+                                    <h4>Risk Analysis Results</h4>
+                                    <div id="risk-list" class="risk-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Page -->
+                <div id="page-analytics" class="page">
+                    <div class="page-header">
+                        <h2>Analytics Dashboard</h2>
+                        <select class="filter-select" id="analytics-period" onchange="loadAnalytics()">
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                            <option value="year">This Year</option>
+                        </select>
+                    </div>
+                    
+                    <div class="stats-grid" id="analytics-stats">
+                        <!-- Analytics stats will be populated -->
+                    </div>
+                    
+                    <div class="analytics-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Most Common Diagnoses</h3>
+                            </div>
+                            <div class="card-content" id="common-diagnoses">
+                                <!-- Chart/data will be populated -->
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Patient Load Forecast</h3>
+                            </div>
+                            <div class="card-content" id="patient-forecast">
+                                <!-- Forecast will be populated -->
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Doctor Performance</h3>
+                            </div>
+                            <div class="card-content" id="doctor-performance">
+                                <!-- Performance data will be populated -->
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Revenue Overview</h3>
+                            </div>
+                            <div class="card-content" id="revenue-overview">
+                                <!-- Revenue data will be populated -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subscription Page -->
+                <div id="page-subscription" class="page">
+                    <div class="page-header">
+                        <h2>Subscription Plans</h2>
+                    </div>
+                    
+                    <div class="pricing-grid">
+                        <div class="pricing-card">
+                            <div class="pricing-header">
+                                <h3>Free Plan</h3>
+                                <div class="pricing-price">$0<span>/month</span></div>
+                            </div>
+                            <div class="pricing-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Up to 50 Patients</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Basic Appointment Management</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Prescription Generation</span>
+                                </div>
+                                <div class="feature-item disabled">
+                                    <i class="fas fa-times"></i>
+                                    <span>AI Features</span>
+                                </div>
+                                <div class="feature-item disabled">
+                                    <i class="fas fa-times"></i>
+                                    <span>Advanced Analytics</span>
+                                </div>
+                            </div>
+                            <button class="btn-primary" disabled>Current Plan</button>
+                        </div>
+                        
+                        <div class="pricing-card featured">
+                            <div class="pricing-badge">Most Popular</div>
+                            <div class="pricing-header">
+                                <h3>Pro Plan</h3>
+                                <div class="pricing-price">$29<span>/month</span></div>
+                            </div>
+                            <div class="pricing-features">
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Unlimited Patients</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>All Appointment Features</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Advanced Prescriptions</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>AI Symptom Checker</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>AI Risk Analysis</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Advanced Analytics</span>
+                                </div>
+                                <div class="feature-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>Priority Support</span>
+                                </div>
+                            </div>
+                            <button class="btn-primary" onclick="upgradeToPro()">
+                                Upgrade to Pro
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loader">
+            <i class="fas fa-spinner fa-spin"></i>
+        </div>
+        <!-- Hidden button to force hide loading (for debugging) -->
+        <button onclick="document.getElementById('loading-overlay').classList.remove('active')" 
+                style="position: absolute; bottom: 20px; padding: 10px 20px; background: #ef476f; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+            Hide Loading (Debug)
+        </button>
+    </div>
+
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>

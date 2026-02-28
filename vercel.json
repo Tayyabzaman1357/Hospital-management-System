@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "name": "healthcare-pro",
+  "builds": [
+    {
+      "src": "**/*.{html,css,js}",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}

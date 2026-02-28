@@ -1,0 +1,29 @@
+{
+  "name": "healthcare-pro",
+  "version": "1.0.0",
+  "description": "HealthCare Pro - Clinic Management System for Mid Hackathon",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8080 -o",
+    "serve": "npx live-server --port=8080",
+    "deploy": "vercel",
+    "deploy:firebase": "firebase deploy"
+  },
+  "keywords": [
+    "healthcare",
+    "clinic-management",
+    "hackathon",
+    "firebase",
+    "saas"
+  ],
+  "author": "Hackathon Team",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "live-server": "^1.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/healthcare-pro.git"
+  }
+}

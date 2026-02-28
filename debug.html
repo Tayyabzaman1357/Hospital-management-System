@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Console - HealthCare Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #00d9ff;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        .section {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            background: #0f3460;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .test-item.pass {
+            border-left: 3px solid #4caf50;
+        }
+        .test-item.fail {
+            border-left: 3px solid #f44336;
+        }
+        .test-item.pending {
+            border-left: 3px solid #ff9800;
+        }
+        .btn {
+            background: #00d9ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #00b8d4;
+        }
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+        .log {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .log-item {
+            margin-bottom: 5px;
+        }
+        .log-item.error {
+            color: #f44336;
+        }
+        .log-item.success {
+            color: #4caf50;
+        }
+        .log-item.warning {
+            color: #ff9800;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-badge.pass {
+            background: #4caf50;
+            color: white;
+        }
+        .status-badge.fail {
+            background: #f44336;
+            color: white;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug Console - HealthCare Pro</h1>
+        
+        <div class="section">
+            <h2>📊 System Status</h2>
+            <div id="status-tests"></div>
+        </div>
+        
+        <div class="section">
+            <h2>🔥 Firebase Configuration</h2>
+            <div id="firebase-config"></div>
+        </div>
+        
+        <div class="section">
+            <h2>👤 Current User</h2>
+            <div id="user-info">Checking...</div>
+        </div>
+        
+        <div class="section">
+            <h2>🧪 Test Functions</h2>
+            <button class="btn" onclick="testFirestore()">Test Firestore</button>
+            <button class="btn" onclick="testAuth()">Test Authentication</button>
+            <button class="btn" onclick="testPatients()">Test Load Patients</button>
+            <button class="btn" onclick="testAppointments()">Test Load Appointments</button>
+            <button class="btn btn-success" onclick="clearLogs()">Clear Logs</button>
+        </div>
+        
+        <div class="section">
+            <h2>📋 Debug Log</h2>
+            <div class="log" id="debug-log"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth, db, collection, getDocs } from '../firebase-config.js';
+        import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        const log = document.getElementById('debug-log');
+        
+        function addLog(message, type = 'info') {
+            const item = document.createElement('div');
+            item.className = `log-item ${type}`;
+            item.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(item);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function addStatusTest(id, status, message) {
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = `test-item ${status}`;
+            div.innerHTML = `
+                <span>${message}</span>
+                <span class="status-badge ${status}">${status.toUpperCase()}</span>
+            `;
+            document.getElementById('status-tests').appendChild(div);
+        }
+
+        function updateStatus(id, status, message) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.className = `test-item ${status}`;
+                el.innerHTML = `
+                    <span>${message}</span>
+                    <span class="status-badge ${status}">${status.toUpperCase()}</span>
+                `;
+            }
+        }
+
+        // Firebase config display
+        const config = {
+            apiKey: "AIzaSyCjRpHEYPn529KJXbhAHEaztHThqLrIZYc",
+            projectId: "health-9b03f",
+            authDomain: "health-9b03f.firebaseapp.com",
+            storageBucket: "health-9b03f.firebasestorage.app"
+        };
+        document.getElementById('firebase-config').innerHTML = `
+            <pre>${JSON.stringify(config, null, 2)}</pre>
+        `;
+        addLog('Firebase config loaded', 'success');
+
+        // Auth state observer
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('user-info').innerHTML = `
+                    <pre>${JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName,
+                        emailVerified: user.emailVerified
+                    }, null, 2)}</pre>
+                `;
+                addLog(`User logged in: ${user.email}`, 'success');
+                updateStatus('auth-status', 'pass', `Authenticated: ${user.email}`);
+            } else {
+                document.getElementById('user-info').innerHTML = '<p>No user logged in</p>';
+                addLog('No user logged in', 'warning');
+            }
+        });
+
+        // Run tests
+        async function runTests() {
+            addLog('Starting system tests...', 'info');
+            
+            // Test Firebase initialization
+            try {
+                if (db) {
+                    addStatusTest('firebase-init', 'pass', 'Firebase initialized');
+                    addLog('Firebase initialized successfully', 'success');
+                } else {
+                    addStatusTest('firebase-init', 'fail', 'Firebase not initialized');
+                    addLog('Firebase initialization failed', 'error');
+                }
+            } catch (e) {
+                addStatusTest('firebase-init', 'fail', `Firebase error: ${e.message}`);
+                addLog(`Firebase error: ${e.message}`, 'error');
+            }
+
+            // Test Auth
+            try {
+                if (auth) {
+                    addStatusTest('auth-status', 'pending', 'Checking authentication...');
+                    addLog('Auth system ready', 'success');
+                }
+            } catch (e) {
+                addStatusTest('auth-status', 'fail', `Auth error: ${e.message}`);
+                addLog(`Auth error: ${e.message}`, 'error');
+            }
+
+            // Test Firestore connection
+            try {
+                await getDocs(collection(db, 'users'));
+                addStatusTest('firestore-status', 'pass', 'Firestore connection successful');
+                addLog('Firestore connection successful', 'success');
+            } catch (e) {
+                addStatusTest('firestore-status', 'fail', `Firestore error: ${e.message}`);
+                addLog(`Firestore error: ${e.message}`, 'error');
+            }
+        }
+
+        // Test functions
+        window.testFirestore = async function() {
+            addLog('Testing Firestore connection...', 'info');
+            try {
+                const snapshot = await getDocs(collection(db, 'users'));
+                addLog(`Firestore test passed! Found ${snapshot.size} users`, 'success');
+                updateStatus('firestore-status', 'pass', `Firestore: ${snapshot.size} users found`);
+            } catch (e) {
+                addLog(`Firestore test failed: ${e.message}`, 'error');
+                updateStatus('firestore-status', 'fail', `Firestore error: ${e.message}`);
+            }
+        };
+
+        window.testAuth = function() {
+            const user = auth.currentUser;
+            if (user) {
+                addLog(`Current user: ${user.email}`, 'success');
+            } else {
+                addLog('No user currently logged in', 'warning');
+            }
+        };
+
+        window.testPatients = async function() {
+            addLog('Testing patient loading...', 'info');
+            try {
+                const snapshot = await getDocs(collection(db, 'patients'));
+                addLog(`Loaded ${snapshot.size} patients`, 'success');
+            } catch (e) {
+                addLog(`Patient load failed: ${e.message}`, 'error');
+            }
+        };
+
+        window.testAppointments = async function() {
+            addLog('Testing appointment loading...', 'info');
+            try {
+                const snapshot = await getDocs(collection(db, 'appointments'));
+                addLog(`Loaded ${snapshot.size} appointments`, 'success');
+            } catch (e) {
+                addLog(`Appointment load failed: ${e.message}`, 'error');
+            }
+        };
+
+        window.clearLogs = function() {
+            log.innerHTML = '';
+            addLog('Logs cleared', 'info');
+        };
+
+        // Run tests on load
+        runTests();
+
+        addLog('Debug console initialized', 'success');
+    </script>
+</body>
+</html>

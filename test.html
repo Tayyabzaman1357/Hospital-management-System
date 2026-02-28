@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthCare Pro - Setup Check</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #073b4c;
+            margin-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .btn {
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 3px solid #ddd;
+            padding-left: 15px;
+        }
+        .checklist li.pass {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .checklist li.fail {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🏥 HealthCare Pro - Setup Check</h1>
+        <p>Testing Firebase connection and configuration...</p>
+        
+        <ul class="checklist" id="checklist">
+            <li class="pending" id="check-firebase">⏳ Checking Firebase...</li>
+            <li class="pending" id="check-auth">⏳ Checking Authentication...</li>
+            <li class="pending" id="check-firestore">⏳ Checking Firestore...</li>
+            <li class="pending" id="check-jspdf">⏳ Checking jsPDF...</li>
+        </ul>
+        
+        <div id="result"></div>
+        
+        <button class="btn" onclick="window.location.href='index.html'">
+            🚀 Go to Application
+        </button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCjRpHEYPn529KJXbhAHEaztHThqLrIZYc",
+            authDomain: "health-9b03f.firebaseapp.com",
+            projectId: "health-9b03f",
+            storageBucket: "health-9b03f.firebasestorage.app",
+            messagingSenderId: "112496956645",
+            appId: "1:112496956645:web:442db267324b8a0f86b00c",
+            measurementId: "G-G05EZTP09H"
+        };
+
+        function updateCheck(id, status, message) {
+            const li = document.getElementById(id);
+            const icons = {
+                success: '✅',
+                error: '❌',
+                pending: '⏳'
+            };
+            li.className = status;
+            li.innerHTML = `${icons[status]} ${message}`;
+        }
+
+        async function runChecks() {
+            let allPassed = true;
+
+            // Check Firebase
+            try {
+                const app = initializeApp(firebaseConfig);
+                updateCheck('check-firebase', 'success', 'Firebase initialized successfully');
+            } catch (error) {
+                updateCheck('check-firebase', 'error', `Firebase error: ${error.message}`);
+                allPassed = false;
+            }
+
+            // Check Auth
+            try {
+                const auth = getAuth();
+                updateCheck('check-auth', 'success', 'Firebase Authentication ready');
+            } catch (error) {
+                updateCheck('check-auth', 'error', `Auth error: ${error.message}`);
+                allPassed = false;
+            }
+
+            // Check Firestore
+            try {
+                const db = getFirestore();
+                updateCheck('check-firestore', 'success', 'Firestore Database ready');
+            } catch (error) {
+                updateCheck('check-firestore', 'error', `Firestore error: ${error.message}`);
+                allPassed = false;
+            }
+
+            // Check jsPDF
+            setTimeout(() => {
+                if (typeof window.jspdf !== 'undefined') {
+                    updateCheck('check-jspdf', 'success', 'jsPDF library loaded');
+                } else {
+                    updateCheck('check-jspdf', 'error', 'jsPDF not loaded - will load on main page');
+                }
+                
+                const result = document.getElementById('result');
+                if (allPassed) {
+                    result.innerHTML = `
+                        <div class="status success">
+                            <strong>✅ All checks passed!</strong>
+                            <p>Your Firebase is configured correctly. Click "Go to Application" to start using HealthCare Pro.</p>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="status error">
+                            <strong>❌ Some checks failed</strong>
+                            <p>Please check your Firebase configuration in firebase-config.js</p>
+                        </div>
+                    `;
+                }
+            }, 500);
+        }
+
+        runChecks();
+    </script>
+</body>
+</html>

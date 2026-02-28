@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enable Firestore - HealthCare Pro</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 700px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ef476f, #ffd166);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header .icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .step {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0077b6;
+        }
+        
+        .step h3 {
+            color: #073b4c;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: #0077b6;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            margin: 10px 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,119,182,0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #06d6a0, #04a87d);
+        }
+        
+        .btn-large {
+            width: 100%;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .checklist {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .checklist li {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s;
+        }
+        
+        .checklist li.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .checklist li.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .checklist li.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-checker {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .code {
+            background: #2d3748;
+            color: #68d391;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 15px 0;
+            word-break: break-all;
+        }
+        
+        a {
+            color: #0077b6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0077b6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <div class="icon">🔥</div>
+            <h1>Enable Firestore Database</h1>
+            <p>Required to use HealthCare Pro</p>
+        </div>
+        
+        <div class="content">
+            <div class="alert alert-warning">
+                <strong>⚠️ Error Detected:</strong> Cloud Firestore API has not been used in your project or is disabled.
+            </div>
+            
+            <div class="alert alert-info">
+                <strong>ℹ️ Follow these 2 simple steps to enable Firestore:</strong>
+            </div>
+            
+            <div class="step">
+                <h3>
+                    <span class="step-number">1</span>
+                    Enable Firestore API
+                </h3>
+                <p style="margin-bottom: 15px; color: #495057;">
+                    Click the button below to open the Google Cloud Console and enable the Firestore API:
+                </p>
+                <a href="https://console.developers.google.com/apis/api/firestore.googleapis.com/overview?project=health-9b03f" 
+                   target="_blank" 
+                   class="btn btn-large">
+                    🔗 Enable Firestore API (Click Here)
+                </a>
+                <p style="margin-top: 15px; font-size: 14px; color: #6c757d;">
+                    Click "ENABLE" button on the page that opens
+                </p>
+            </div>
+            
+            <div class="step">
+                <h3>
+                    <span class="step-number">2</span>
+                    Create Firestore Database
+                </h3>
+                <p style="margin-bottom: 15px; color: #495057;">
+                    After enabling the API, create your database:
+                </p>
+                <a href="https://console.firebase.google.com/project/health-9b03f/firestore" 
+                   target="_blank" 
+                   class="btn btn-large">
+                    📁 Go to Firebase Console → Firestore
+                </a>
+                <p style="margin-top: 15px; font-size: 14px; color: #6c757d;">
+                    Click "Create database" → Choose "Test mode" → Select location → Click "Enable"
+                </p>
+            </div>
+            
+            <div class="status-checker">
+                <h3 style="margin-bottom: 15px; color: #073b4c;">Check Status</h3>
+                <ul class="checklist">
+                    <li class="pending" id="check-api">
+                        <span class="spinner" id="spinner-api" style="display:none;"></span>
+                        <span id="text-api">⏳ Checking Firestore API...</span>
+                    </li>
+                    <li class="pending" id="check-database">
+                        <span class="spinner" id="spinner-database" style="display:none;"></span>
+                        <span id="text-database">⏳ Checking Database...</span>
+                    </li>
+                </ul>
+                
+                <button class="btn" onclick="checkStatus()" id="check-btn">
+                    🔄 Check Status
+                </button>
+                
+                <a href="index.html" class="btn btn-success" id="launch-btn" style="display:none;">
+                    🚀 Launch Application
+                </a>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+                <h4 style="color: #073b4c; margin-bottom: 10px;">📝 Detailed Instructions:</h4>
+                <ol style="margin-left: 20px; line-height: 2; color: #495057;">
+                    <li>Click "Enable Firestore API" button above</li>
+                    <li>Click the <strong>ENABLE</strong> button on the Google Cloud Console page</li>
+                    <li>Wait for it to show "API Enabled"</li>
+                    <li>Click "Go to Firebase Console → Firestore" button</li>
+                    <li>Click <strong>"Create database"</strong></li>
+                    <li>Choose <strong>"Start in test mode"</strong> (for development)</li>
+                    <li>Select a location closest to you</li>
+                    <li>Click <strong>"Enable"</strong></li>
+                    <li>Wait 30-60 seconds for changes to propagate</li>
+                    <li>Come back here and click "Check Status"</li>
+                    <li>When all checks pass, click "Launch Application"</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCjRpHEYPn529KJXbhAHEaztHThqLrIZYc",
+            authDomain: "health-9b03f.firebaseapp.com",
+            projectId: "health-9b03f",
+            storageBucket: "health-9b03f.firebasestorage.app",
+            messagingSenderId: "112496956645",
+            appId: "1:112496956645:web:442db267324b8a0f86b00c",
+            measurementId: "G-G05EZTP09H"
+        };
+
+        let db;
+        
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            updateCheck('check-api', 'success', '✅ Firestore API initialized');
+        } catch (error) {
+            updateCheck('check-api', 'error', '❌ Firestore API not enabled');
+            console.error('Firestore init error:', error);
+        }
+
+        window.checkStatus = async function() {
+            // Check API
+            document.getElementById('spinner-api').style.display = 'inline-block';
+            updateCheck('check-api', 'pending', '⏳ Checking Firestore API...');
+            
+            setTimeout(async () => {
+                document.getElementById('spinner-api').style.display = 'none';
+                
+                try {
+                    // Try to access Firestore
+                    await getDocs(collection(db, 'users'));
+                    updateCheck('check-api', 'success', '✅ Firestore API is enabled');
+                    updateCheck('check-database', 'success', '✅ Database is accessible');
+                    
+                    document.getElementById('launch-btn').style.display = 'inline-block';
+                    document.getElementById('check-btn').style.display = 'none';
+                    
+                } catch (error) {
+                    console.error('Firestore check error:', error);
+                    
+                    if (error.message.includes('permission-denied') || 
+                        error.message.includes('not been used') ||
+                        error.message.includes('disabled')) {
+                        updateCheck('check-api', 'error', '❌ Firestore API not enabled');
+                        updateCheck('check-database', 'error', '❌ Database not created');
+                    } else if (error.message.includes('missing-permission')) {
+                        updateCheck('check-api', 'success', '✅ Firestore API enabled');
+                        updateCheck('check-database', 'error', '⚠️ Database needs setup');
+                    } else {
+                        updateCheck('check-api', 'error', '❌ Connection failed');
+                    }
+                }
+            }, 1000);
+        };
+
+        function updateCheck(id, status, text) {
+            const li = document.getElementById(id);
+            li.className = status;
+            document.getElementById(`text-${id.split('-')[1]}`).textContent = text;
+        }
+
+        // Auto-check on page load
+        setTimeout(() => {
+            checkStatus();
+        }, 500);
+    </script>
+</body>
+</html>
