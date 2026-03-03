@@ -1,11 +1,18 @@
 import { auth, db, storage, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc, query, where, orderBy, Timestamp, setDoc, ref, uploadBytes, getDownloadURL } from './firebase-config.js';
 import { onAuthStateChange, signIn, signUp, logOut, hasFeatureAccess, checkPatientLimit, getCurrentUser } from './auth.js';
+import { geminiAI } from './ai-service.js';
 
 // Global state
 let currentUser = null;
 let currentUserData = null;
 let currentPatientId = null;
 let currentPrescriptionId = null;
+
+// Gemini AI API Key - Configure in Settings or use environment variable
+let GEMINI_API_KEY = localStorage.getItem('gemini_api_key') || '';
+if (GEMINI_API_KEY) {
+    geminiAI.initialize(GEMINI_API_KEY);
+}
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
@@ -86,6 +93,10 @@ function initializeApp() {
     // AI Tools
     document.getElementById('symptom-checker-form')?.addEventListener('submit', handleSymptomCheck);
     document.getElementById('prescription-explain-form')?.addEventListener('submit', handlePrescriptionExplain);
+
+    // AI Chat
+    document.getElementById('chat-input')?.addEventListener('keypress', handleChatKeyPress);
+    document.getElementById('chat-send-btn')?.addEventListener('click', sendChatMessage);
 
     // Modal close buttons
     document.querySelectorAll('.modal-close').forEach(btn => {
@@ -554,8 +565,8 @@ async function loadPatients() {
         }
 
         const patients = [];
-        for (const doc of patientsSnapshot.docs) {
-            patients.push({ id: doc.id, ...doc.data() });
+        for (const patientDoc of patientsSnapshot.docs) {
+            patients.push({ id: patientDoc.id, ...patientDoc.data() });
         }
 
         tbody.innerHTML = patients.map(patient => `
@@ -1098,9 +1109,9 @@ async function loadPrescriptions() {
     }
     
     const prescriptions = [];
-    for (const doc of snapshot.docs) {
-        const data = doc.data();
-        
+    for (const rxDoc of snapshot.docs) {
+        const data = rxDoc.data();
+
         // Get patient name
         let patientName = 'Unknown';
         if (data.patientId) {
@@ -1109,7 +1120,7 @@ async function loadPrescriptions() {
                 patientName = patientDoc.data().name;
             }
         }
-        
+
         // Get doctor name
         let doctorName = 'Unknown';
         if (data.doctorId) {
@@ -1118,9 +1129,9 @@ async function loadPrescriptions() {
                 doctorName = doctorDoc.data().name;
             }
         }
-        
+
         prescriptions.push({
-            id: doc.id,
+            id: rxDoc.id,
             ...data,
             patientName,
             doctorName
@@ -1339,43 +1350,92 @@ async function viewPrescription(prescriptionId) {
 // AI Features
 async function handleSymptomCheck(e) {
     e.preventDefault();
-    
+
     if (!hasFeatureAccess(currentUserData, 'ai-tools')) {
         showToast('AI features require Pro plan', 'warning');
         showPage('subscription');
         return;
     }
-    
+
     const symptoms = [];
     document.querySelectorAll('.symptom-input').forEach(input => {
         if (input.value.trim()) {
             symptoms.push(input.value.trim());
         }
     });
-    
+
     const age = document.getElementById('sc-age').value;
     const gender = document.getElementById('sc-gender').value;
     const history = document.getElementById('sc-history').value;
-    
+
+    if (symptoms.length === 0) {
+        showToast('Please enter at least one symptom', 'warning');
+        return;
+    }
+
     showLoading(true);
-    
+
     try {
-        // Simulated AI analysis (in production, call actual AI API)
-        const aiResponse = await analyzeSymptomsAI(symptoms, age, gender, history);
+        let aiResponse;
         
+        // Try using Gemini AI if available
+        if (geminiAI.initialized) {
+            try {
+                aiResponse = await geminiAI.analyzeSymptoms(symptoms, age, gender, history);
+            } catch (aiError) {
+                console.warn('Gemini AI failed, using fallback:', aiError);
+                showToast('AI service unavailable, using basic analysis', 'warning');
+                aiResponse = await analyzeSymptomsAI(symptoms, age, gender, history);
+            }
+        } else {
+            // Use fallback analysis
+            aiResponse = await analyzeSymptomsAI(symptoms, age, gender, history);
+        }
+
+        // Display results
         document.getElementById('sc-conditions').innerHTML = aiResponse.conditions
             .map(c => `<span class="risk-badge medium">${c}</span>`).join('');
-        
+
         const riskElement = document.getElementById('sc-risk');
-        riskElement.textContent = aiResponse.riskLevel;
-        riskElement.className = `risk-badge ${aiResponse.riskLevel.toLowerCase()}`;
-        
-        document.getElementById('sc-tests').innerHTML = aiResponse.tests
+        riskElement.textContent = aiResponse.riskLevel || 'medium';
+        riskElement.className = `risk-badge ${(aiResponse.riskLevel || 'medium').toLowerCase()}`;
+
+        document.getElementById('sc-tests').innerHTML = (aiResponse.tests || [])
             .map(t => `<div>• ${t}</div>`).join('');
-        
+
+        // Add recommendations if available
+        if (aiResponse.explanation) {
+            const explanationHTML = `<div style="margin-top: 16px; padding: 12px; background: #f8f9fa; border-radius: 8px; font-size: 14px; line-height: 1.6;">
+                <strong>📋 AI Analysis:</strong><br>${aiResponse.explanation}
+            </div>`;
+            document.getElementById('sc-conditions').innerHTML += explanationHTML;
+        }
+
         document.getElementById('symptom-results').style.display = 'block';
         showToast('AI analysis complete!', 'success');
+
+        // Save to diagnosis logs
+        try {
+            await addDoc(collection(db, 'diagnosisLogs'), {
+                symptoms,
+                age,
+                gender,
+                history,
+                aiResponse: {
+                    conditions: aiResponse.conditions,
+                    tests: aiResponse.tests,
+                    riskLevel: aiResponse.riskLevel || 'medium'
+                },
+                createdAt: new Date().toISOString(),
+                doctorId: currentUser.uid,
+                usedGeminiAI: geminiAI.initialized
+            });
+        } catch (e) {
+            console.error('Error saving diagnosis log:', e);
+        }
+
     } catch (error) {
+        console.error('Symptom check error:', error);
         showToast('AI analysis failed: ' + error.message, 'error');
     } finally {
         showLoading(false);
@@ -1439,54 +1499,99 @@ async function analyzeSymptomsAI(symptoms, age, gender, history) {
 
 async function handlePrescriptionExplain(e) {
     e.preventDefault();
-    
+
     if (!hasFeatureAccess(currentUserData, 'ai-tools')) {
         showToast('AI features require Pro plan', 'warning');
         showPage('subscription');
         return;
     }
-    
+
     const medicines = document.getElementById('pe-medicines').value;
     const diagnosis = document.getElementById('pe-diagnosis').value;
     const includeUrdu = document.getElementById('pe-urdu').checked;
-    
+
+    if (!medicines.trim()) {
+        showToast('Please enter medicine names', 'warning');
+        return;
+    }
+
     showLoading(true);
-    
+
     try {
-        const explanation = await generatePrescriptionExplanationAI(medicines, diagnosis);
+        let explanation;
         
-        document.getElementById('pe-explanation').innerHTML = `
-            <div style="line-height: 1.8;">${explanation.simple}</div>
-            ${explanation.lifestyle ? `<div style="margin-top: 16px;"><strong>Lifestyle Tips:</strong><br>${explanation.lifestyle}</div>` : ''}
-        `;
+        // Try using Gemini AI if available
+        if (geminiAI.initialized) {
+            try {
+                explanation = await geminiAI.explainPrescription(medicines, diagnosis, includeUrdu);
+            } catch (aiError) {
+                console.warn('Gemini AI failed, using fallback:', aiError);
+                showToast('AI service unavailable, using basic explanation', 'warning');
+                explanation = await generatePrescriptionExplanationAI(medicines, diagnosis, includeUrdu);
+            }
+        } else {
+            // Use fallback explanation
+            explanation = await generatePrescriptionExplanationAI(medicines, diagnosis, includeUrdu);
+        }
+
+        // Format and display the explanation
+        let displayHTML = `<div style="line-height: 1.8; white-space: pre-wrap;">${explanation.simple}</div>`;
         
-        if (includeUrdu) {
-            document.getElementById('pe-urdu-text').textContent = explanation.urdu || 'Urdu translation not available';
+        if (explanation.lifestyle) {
+            displayHTML += `<div style="margin-top: 16px; padding: 12px; background: #e8f5e9; border-radius: 8px;">
+                <strong>🌿 Lifestyle Tips:</strong><br>${explanation.lifestyle}
+            </div>`;
+        }
+
+        document.getElementById('pe-explanation').innerHTML = displayHTML;
+
+        if (includeUrdu && explanation.urdu) {
+            document.getElementById('pe-urdu-text').innerHTML = `<div style="direction: rtl; text-align: right; font-family: 'Noto Nastaliq Urdu', serif; padding: 12px; background: #fff3e0; border-radius: 8px; margin-top: 12px;">${explanation.urdu}</div>`;
             document.getElementById('pe-urdu-text').style.display = 'block';
         } else {
             document.getElementById('pe-urdu-text').style.display = 'none';
         }
-        
+
         document.getElementById('explanation-results').style.display = 'block';
         showToast('Explanation generated!', 'success');
+
     } catch (error) {
+        console.error('Prescription explanation error:', error);
         showToast('Failed to generate explanation: ' + error.message, 'error');
     } finally {
         showLoading(false);
     }
 }
 
-async function generatePrescriptionExplanationAI(medicines, diagnosis) {
-    // Simulated AI explanation
+async function generatePrescriptionExplanationAI(medicines, diagnosis, includeUrdu = false) {
+    // Fallback AI explanation when Gemini is not available
     return {
-        simple: `Based on your diagnosis of ${diagnosis || 'your condition'}, your doctor has prescribed the following medications. Please take all medicines as directed by your doctor. Complete the full course even if you start feeling better. If you experience any side effects, contact your doctor immediately.`,
-        lifestyle: 'Get adequate rest, drink plenty of water, eat a balanced diet, and avoid strenuous activities until you recover.',
-        urdu: includeUrduText(diagnosis)
-    };
-}
+        simple: `**About Your Prescription**
 
-function includeUrduText(diagnosis) {
-    return 'آپ کی تشخیص کی بنیاد پر، آپ کے ڈاکٹر نے درج ذیل ادویات تجویز کی ہیں۔ برائے مہربانی تمام ادویات ڈاکٹر کے ہدایت کے مطابق استعمال کریں۔';
+Based on your diagnosis of ${diagnosis || 'your condition'}, your doctor has prescribed the following medications:
+
+${medicines}
+
+**Important Instructions:**
+• Take all medicines exactly as directed by your doctor
+• Complete the full course even if you start feeling better
+• Do not skip doses or stop early
+• If you miss a dose, take it as soon as you remember (unless it's almost time for the next dose)
+
+**Common Side Effects to Watch:**
+• Nausea or upset stomach
+• Drowsiness or dizziness
+• Allergic reactions (rash, itching, swelling)
+
+If you experience severe side effects, contact your doctor immediately.
+
+**When to Follow Up:**
+• If symptoms don't improve within the expected timeframe
+• If symptoms worsen
+• If you have any concerns about the medications`,
+        lifestyle: '• Get adequate rest (7-8 hours of sleep)\n• Drink plenty of water (8-10 glasses daily)\n• Eat a balanced, nutritious diet\n• Avoid alcohol and smoking\n• Manage stress through relaxation techniques\n• Follow any specific dietary restrictions advised by your doctor',
+        urdu: includeUrdu ? 'آپ کی تشخیص کی بنیاد پر، آپ کے ڈاکٹر نے درج ذیل ادویات تجویز کی ہیں۔ برائے مہربانی تمام ادویات ڈاکٹر کے ہدایت کے مطابق استعمال کریں۔ مکمل کورس ضرور کریں چاہے آپ بہتر محسوس کرنے لگیں۔' : null
+    };
 }
 
 async function analyzePatientRisks() {
@@ -1717,7 +1822,8 @@ function showDashboard() {
         const isPro = currentUserData.subscriptionPlan === 'pro';
         const role = currentUserData.role;
 
-        document.getElementById('nav-ai-tools').style.display = isPro ? 'flex' : 'none';
+        // AI Tools and Analytics now available for all users (AI Tools requires API key)
+        document.getElementById('nav-ai-tools').style.display = 'flex';
         document.getElementById('nav-analytics').style.display = isPro ? 'flex' : 'none';
         document.getElementById('nav-subscription').style.display = role === 'admin' || !isPro ? 'flex' : 'none';
 
@@ -1780,6 +1886,7 @@ window.viewPatient = viewPatient;
 window.openAppointmentModal = openAppointmentModal;
 window.editAppointment = editAppointment;
 window.cancelAppointment = cancelAppointment;
+window.openPrescriptionModal = openPrescriptionModal;
 window.viewPrescription = viewPrescription;
 window.downloadPrescriptionPDF = downloadPrescriptionPDF;
 window.analyzePatientRisks = analyzePatientRisks;
@@ -1853,4 +1960,229 @@ function downloadPrescriptionPDF() {
 
 function upgradeToPro() {
     showToast('Contact admin to upgrade to Pro plan', 'info');
+}
+
+// AI Chatbot Functions
+let chatConversationHistory = [];
+let isChatLoading = false;
+
+function handleChatKeyPress(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendChatMessage();
+    }
+}
+
+async function sendChatMessage() {
+    const chatInput = document.getElementById('chat-input');
+    const message = chatInput.value.trim();
+
+    console.log('Sending message:', message);
+    
+    if (!message || isChatLoading) {
+        console.log('Message empty or loading:', !message, isChatLoading);
+        return;
+    }
+
+    // Add user message to chat
+    addChatMessage(message, 'user');
+    chatInput.value = '';
+
+    // Show typing indicator
+    showTypingIndicator();
+    isChatLoading = true;
+
+    try {
+        // Add to conversation history
+        chatConversationHistory.push(`User: ${message}`);
+
+        let response;
+
+        // Try using Gemini AI if available
+        if (geminiAI.initialized) {
+            try {
+                response = await geminiAI.chat(message, chatConversationHistory);
+            } catch (aiError) {
+                console.warn('Gemini AI failed, using fallback:', aiError);
+                response = getFallbackChatResponse(message);
+            }
+        } else {
+            console.log('Using fallback response (no API key)');
+            // Use fallback response when no API key
+            response = getFallbackChatResponse(message);
+        }
+
+        // Remove typing indicator
+        hideTypingIndicator();
+
+        // Add bot response
+        addChatMessage(response, 'bot');
+        chatConversationHistory.push(`Assistant: ${response}`);
+
+        // Keep conversation history manageable (last 20 messages)
+        if (chatConversationHistory.length > 20) {
+            chatConversationHistory = chatConversationHistory.slice(-20);
+        }
+
+    } catch (error) {
+        console.error('Chat error:', error);
+        hideTypingIndicator();
+        addChatMessage('I apologize, but I\'m having trouble responding right now. Please try again or consult a healthcare professional for medical advice.', 'bot');
+        showToast('AI chat failed: ' + error.message, 'error');
+    } finally {
+        isChatLoading = false;
+    }
+}
+
+function getFallbackChatResponse(message) {
+    // Simple keyword-based responses for common health queries
+    const lowerMsg = message.toLowerCase();
+    
+    if (lowerMsg.includes('fever')) {
+        return "For fever, I recommend:\n• Rest and stay hydrated\n• Take paracetamol if temperature is above 100°F\n• Use cold compresses\n\n⚠️ **See a doctor if:** Fever persists more than 3 days, temperature exceeds 103°F, or you have severe symptoms like difficulty breathing.";
+    }
+    if (lowerMsg.includes('headache')) {
+        return "For headaches, try these remedies:\n• Rest in a quiet, dark room\n• Stay hydrated\n• Apply a cold or warm compress\n• Practice relaxation techniques\n\n⚠️ **See a doctor if:** Headache is sudden and severe, follows a head injury, or is accompanied by fever, stiff neck, or confusion.";
+    }
+    if (lowerMsg.includes('cold') || lowerMsg.includes('cough')) {
+        return "For cold and cough:\n• Drink warm fluids (tea, soup)\n• Gargle with salt water\n• Use honey for cough (1-2 tsp)\n• Get plenty of rest\n• Use a humidifier\n\n⚠️ **See a doctor if:** Symptoms last more than 10 days, you have difficulty breathing, or high fever.";
+    }
+    if (lowerMsg.includes('stomach') || lowerMsg.includes('abdominal')) {
+        return "For stomach discomfort:\n• Drink clear fluids\n• Eat bland foods (BRAT diet: Banana, Rice, Applesauce, Toast)\n• Avoid spicy, fatty foods\n• Rest your digestive system\n\n⚠️ **See a doctor if:** Severe pain, blood in stool, persistent vomiting, or symptoms last more than 2 days.";
+    }
+    if (lowerMsg.includes('diabetes')) {
+        return "**Diabetes Management Tips:**\n• Monitor blood sugar regularly\n• Follow a balanced diet low in refined carbs\n• Exercise 30 minutes daily\n• Take medications as prescribed\n• Check feet daily for wounds\n\nRegular check-ups with your doctor are essential for proper diabetes management.";
+    }
+    if (lowerMsg.includes('blood pressure') || lowerMsg.includes('hypertension')) {
+        return "**Blood Pressure Management:**\n• Reduce salt intake\n• Exercise regularly (30 min/day)\n• Maintain healthy weight\n• Limit alcohol\n• Manage stress\n• Don't smoke\n\nMonitor your BP regularly and follow your doctor's advice for medications.";
+    }
+    if (lowerMsg.includes('thank')) {
+        return "You're welcome! Is there anything else I can help you with regarding your health? 😊";
+    }
+    if (lowerMsg.includes('hello') || lowerMsg.includes('hi')) {
+        return "Hello! 👋 I'm your AI health assistant. How can I help you today with your health concerns?";
+    }
+    
+    // Default response
+    return "Thank you for your question. As an AI health assistant, I can provide general health information and wellness tips.\n\n**For your specific concern:** I recommend consulting with a healthcare professional for personalized medical advice.\n\n⚠️ **Important:** For medical emergencies, please contact emergency services immediately.\n\nIs there anything else I can help you with?";
+}
+
+function addChatMessage(message, type) {
+    const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${type}`;
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'message-bubble';
+    
+    // Convert markdown-style formatting to HTML
+    let formattedMessage = message
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/•/g, '•')
+        .replace(/\n/g, '<br>');
+    
+    bubble.innerHTML = formattedMessage;
+    messageDiv.appendChild(bubble);
+    chatMessages.appendChild(messageDiv);
+    
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function showTypingIndicator() {
+    const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) return;
+    
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-message bot';
+    typingDiv.id = 'typing-indicator';
+    
+    typingDiv.innerHTML = `
+        <div class="message-bubble">
+            <div class="typing-indicator">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(typingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+function showAPIKeyModal() {
+    const modal = document.getElementById('api-key-modal');
+    if (modal) {
+        modal.classList.add('active');
+    } else {
+        // Create modal if it doesn't exist
+        createAPIKeyModal();
+    }
+}
+
+function createAPIKeyModal() {
+    const modalHTML = `
+        <div id="api-key-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Configure Gemini AI API Key</h2>
+                    <button class="modal-close" onclick="this.closest('.modal').classList.remove('active')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div style="padding: 16px; background: #fff3cd; border-radius: 8px; margin-bottom: 16px;">
+                        <strong>⚠️ Security Notice:</strong> Store your API key securely. Never share it publicly.
+                    </div>
+                    <div class="form-group">
+                        <label for="api-key-input">Gemini API Key</label>
+                        <input type="password" id="api-key-input" placeholder="Enter your API key (AIzaSy...)">
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn-secondary" onclick="document.getElementById('api-key-modal').classList.remove('active')">Cancel</button>
+                        <button class="btn-primary" onclick="saveAPIKey()">Save API Key</button>
+                    </div>
+                    <p style="margin-top: 16px; font-size: 13px; color: var(--gray-600);">
+                        Get your API key from: <a href="https://makersuite.google.com/app/apikey" target="_blank" style="color: var(--primary-color);">Google AI Studio</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function saveAPIKey() {
+    const apiKeyInput = document.getElementById('api-key-input');
+    const apiKey = apiKeyInput.value.trim();
+    
+    if (!apiKey) {
+        showToast('Please enter a valid API key', 'warning');
+        return;
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('gemini_api_key', apiKey);
+    
+    // Initialize AI service
+    geminiAI.initialize(apiKey);
+    
+    document.getElementById('api-key-modal').classList.remove('active');
+    showToast('API key saved successfully!', 'success');
+}
+
+// Add menu item to configure API key in settings
+function addAPIKeySettings() {
+    // This can be called from a settings menu if you add one
+    showAPIKeyModal();
 }

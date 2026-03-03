@@ -133,9 +133,9 @@ export function hasFeatureAccess(userData, feature) {
         return true;
     }
 
-    // Free plan restrictions
+    // Free plan restrictions (AI tools now available in free plan for testing)
     if (subscriptionPlan === 'free') {
-        const freePlanFeatures = ['patients', 'appointments', 'prescriptions'];
+        const freePlanFeatures = ['patients', 'appointments', 'prescriptions', 'ai-tools'];
         if (!freePlanFeatures.includes(feature)) {
             return false;
         }
